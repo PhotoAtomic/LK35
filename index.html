@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<!-- 
+08.10.2017, Bodo Baitis
+simple Web-App to access the Sunricher SR1009FAWI / LK35 wifi LED controller via WebService (led.php)
+
+MIT-Lizenz
+Copyright (c) 2017, Bodo Baitis 
+Hiermit wird unentgeltlich jeder Person, die eine Kopie der Software und der zugehörigen Dokumentationen (die "Software") erhält, 
+die Erlaubnis erteilt, sie uneingeschränkt zu nutzen, inklusive und ohne Ausnahme mit dem Recht, sie zu verwenden, 
+zu kopieren, zu verändern, zusammenzufügen, zu veröffentlichen, zu verbreiten, zu unterlizenzieren und/oder zu verkaufen, 
+und Personen, denen diese Software überlassen wird, diese Rechte zu verschaffen, unter den folgenden Bedingungen:
+
+Der obige Urheberrechtsvermerk und dieser Erlaubnisvermerk sind in allen Kopien oder Teilkopien der Software beizulegen.
+
+DIE SOFTWARE WIRD OHNE JEDE AUSDRÜCKLICHE ODER IMPLIZIERTE GARANTIE BEREITGESTELLT, EINSCHLIEẞLICH DER GARANTIE ZUR BENUTZUNG 
+FÜR DEN VORGESEHENEN ODER EINEM BESTIMMTEN ZWECK SOWIE JEGLICHER RECHTSVERLETZUNG, JEDOCH NICHT DARAUF BESCHRÄNKT. 
+IN KEINEM FALL SIND DIE AUTOREN ODER COPYRIGHTINHABER FÜR JEGLICHEN SCHADEN ODER SONSTIGE ANSPRÜCHE HAFTBAR ZU MACHEN, 
+OB INFOLGE DER ERFÜLLUNG EINES VERTRAGES, EINES DELIKTES ODER ANDERS IM ZUSAMMENHANG MIT DER SOFTWARE 
+ODER SONSTIGER VERWENDUNG DER SOFTWARE ENTSTANDEN.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="led.css">
+</head>
+
+<body style="font-family:RalewayThin,Helvetica,sans-serif;">
+	<h3>LED Steuerung</h3>
+
+	<form action="index.php" method="post" autocomplete="off">
+		<button class="btn" onclick="clicked('on')">&nbsp;&nbsp;an&nbsp;&nbsp;</button>
+		<button class="btn" onclick="clicked('off')">&nbsp;aus&nbsp;</button>
+		<br /><br /> dunkel <br />
+		<button class="btn" onclick="clicked('1')">1 grün</button>
+		<button class="btn" onclick="clicked('2')">2 blau</button>
+		<button class="btn" onclick="clicked('3')">3 rot</button>
+		<button class="btn" onclick="clicked('4')">4 weiss</button>
+		<br /><br /> hell <br />
+		<button class="btn" onclick="clicked('5')">5 grün</button>
+		<button class="btn" onclick="clicked('6')">6 blau</button>
+		<button class="btn" onclick="clicked('7')">7 w-weiss</button>
+		<button class="btn" onclick="clicked('8')">8 k-weiss</button>
+
+		<br /><br /> <!-- we could read and insert the last known values here, but we do it with ajax at the client side --> 
+        <div id="slidecontainer">
+        <input type="range" min="0" max="255" value="0" class="slider" id="R" onchange="chg()" />
+        <input type="range" min="0" max="255" value="0" class="slider" id="G" onchange="chg()" />
+        <input type="range" min="0" max="255" value="0" class="slider" id="B" onchange="chg()" />
+        <input type="range" min="0" max="255" value="0" class="slider" id="W" onchange="chg()" />
+        <input type="range" min="1" max="8"   value="0" class="slider" id="D" onchange="chg()" />
+        </div>
+
+		Speichern <br />
+		<button class="btnS" onclick="clicked('s1')">s1</button>
+		<button class="btnS" onclick="clicked('s2')">s2</button>
+		<button class="btnS" onclick="clicked('s3')">s3</button>
+		<button class="btnS" onclick="clicked('s4')">s4</button>
+		<button class="btnS" onclick="clicked('s5')">s5</button>
+		<button class="btnS" onclick="clicked('s6')">s6</button>
+		<button class="btnS" onclick="clicked('s7')">s7</button>
+		<button class="btnS" onclick="clicked('s8')">s8</button>
+	</form>
+
+<script type="text/javascript">
+function get(e) {
+  return document.getElementById(e);	  
+}
+
+function chg() {
+  var $SR = get('R');
+  var $SG = get('G');
+  var $SB = get('B');
+  var $SW = get('W');
+  var $SD = get('D');
+	  
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", "led.php?r="+$SR.value+"&g="+$SG.value+"&b="+$SB.value+"&w="+$SW.value+"&d="+$SD.value, true);
+  xmlhttp.send();
+  QueryAndInitValues();
+}
+
+function clicked(cmd) {
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", "led.php?cmd="+cmd, true);
+  xmlhttp.send();
+
+  // read current values, if a storage (s1-s8) has been selected
+  if (cmd>='1' && cmd<='8')
+	QueryAndInitValues();
+}
+
+// pull initial values
+function InitValues(dat) {
+  get('R').value = dat.r;
+  get('G').value = dat.g;
+  get('B').value = dat.b;
+  get('W').value = dat.w;
+  get('D').value = dat.d;
+}
+
+// called on document ready and after selecting a storage s1-s8
+function QueryAndInitValues() {
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+    {
+    if (xhr.readyState===XMLHttpRequest.DONE && xhr.status===200)
+     {
+     try  
+       {
+       InitValues(JSON.parse(xhr.responseText));
+       }
+     catch (err)
+       {
+       }
+     }
+    }
+  xhr.open("GET", "led.php?cmd=q", true);
+  xhr.send();
+}
+
+document.addEventListener("DOMContentLoaded", function(event) { 
+  QueryAndInitValues(); 
+  }, false);
+
+/*
+function r(f){/in/.test(document.readyState)?setTimeout('r('+f+')',9):f()}
+r(function(){
+  QueryAndInitValues(); 
+});
+*/
+
+</script>
+</body>
+</html>
