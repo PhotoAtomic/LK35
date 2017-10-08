@@ -3,7 +3,7 @@ Sunricher SR1009FAWi / LK35 php WebService
 
 Introduction
 ------------
-The WiFi LED Controller Sunricher SR1009FAWi aka LK35 is a receive only controller. It is not possible the get the current rgbw-values back from it.
+The WiFi LED Controller Sunricher SR1009FAWi aka LK35 is a receive only controller. It is not possible to get the current rgbw-values back from it.
 This project introduces a web service to relay light-commands to the LED controller and persist the last known values in a json file.
 The web service can return the stored last known rgbw-values to any client application.
 
