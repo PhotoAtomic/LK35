@@ -19,7 +19,7 @@ Configure a directory/location on your web server e.g. /led/ and copy all files 
 Attention: The php engine must have write access to this folder because a json and a sync file are updated periodically.
 
 Call the main file /led/index.html from your client.
-You can also write an app tat will use the web service /led/led.php?... directly. 
+You can also write an app using the web service /led/led.php?... directly. 
 
 License
 -------
